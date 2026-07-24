@@ -9,214 +9,159 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, monospace;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
         }
 
-        /* ===== SEOUL CODE THEME (NATIVE CSS MEDIA QUERIES) ===== */
+        /* ===== ULTRALIGHT HTML-ENERGY NATIVE THEMES ===== */
         :root {
-            /* Seoul Dark (Default) */
-            --bg-body: #3a3a3a;
-            --bg-sidebar: #303030;
-            --border-color: #4e4e4e;
-            --card-bg: #262626;
-            --card-header-color: #87afd7;
-            --text-primary: #e4e4e4;
-            --text-secondary: #9e9e9e;
-            --text-muted: #767676;
-            --btn-bg: #3a3a3a;
-            --btn-hover-bg: #4e4e4e;
-            --btn-active-bg: #262626;
-            --btn-text: #e4e4e4;
-            --btn-border: #4e4e4e;
-            --input-track: #262626;
-            --side-btn-bg: #303030;
-            --side-btn-hover: #3a3a3a;
-            --side-btn-active: #4e4e4e;
-            --canvas-area-bg: #1e1e1e;
-            --toolbar-bg: rgba(48, 48, 48, 0.92);
-            --toolbar-border: #4e4e4e;
-            --tool-btn-bg: #3a3a3a;
-            --tool-btn-text: #d0d0d0;
-            --tool-btn-hover: #4e4e4e;
-            --hint-bg: rgba(38, 38, 38, 0.88);
-            --hint-border: #4e4e4e;
-            --hint-text: #9e9e9e;
-            --shadow-color: rgba(0, 0, 0, 0.4);
-            --accent-primary: #5f87af;
-            --accent-primary-hover: #4e76a0;
-            --accent-primary-text: #ffffff;
+            /* Light Theme (Default) */
+            --bg-body: #ffffff;
+            --bg-sidebar: #f5f5f5;
+            --bg-card: #ffffff;
+            --bg-canvas: #fafafa;
+            --text-main: #111111;
+            --text-muted: #666666;
+            --border: #cccccc;
+            --border-active: #000000;
+            --btn-bg: #ffffff;
+            --btn-text: #111111;
+            --btn-hover-bg: #111111;
+            --btn-hover-text: #ffffff;
+            --grid-color: rgba(0, 0, 0, 0.06);
+            --shape-fill: #000000;
+            --guide-unselected: rgba(220, 50, 47, 0.8);
+            --guide-selected: #0066cc;
+            --snap-center: #008800;
+            --snap-edge: #0088cc;
         }
 
-        @media (prefers-color-scheme: light) {
+        @media (prefers-color-scheme: dark) {
             :root {
-                /* Seoul Light */
-                --bg-body: #e1e1e1;
-                --bg-sidebar: #ebebeb;
-                --border-color: #d0d0d0;
-                --card-bg: #f5f5f5;
-                --card-header-color: #3a75a4;
-                --text-primary: #333333;
-                --text-secondary: #626262;
-                --text-muted: #8a8a8a;
-                --btn-bg: #f5f5f5;
-                --btn-hover-bg: #e1e1e1;
-                --btn-active-bg: #d0d0d0;
-                --btn-text: #333333;
-                --btn-border: #c8c8c8;
-                --input-track: #d0d0d0;
-                --side-btn-bg: #ffffff;
-                --side-btn-hover: #e8e8e8;
-                --side-btn-active: #d8d8d8;
-                --canvas-area-bg: #eaeaea;
-                --toolbar-bg: rgba(245, 245, 245, 0.92);
-                --toolbar-border: #c8c8c8;
-                --tool-btn-bg: #ffffff;
-                --tool-btn-text: #444444;
-                --tool-btn-hover: #e8e8e8;
-                --hint-bg: rgba(245, 245, 245, 0.88);
-                --hint-border: #c8c8c8;
-                --hint-text: #626262;
-                --shadow-color: rgba(0, 0, 0, 0.08);
-                --accent-primary: #3a75a4;
-                --accent-primary-hover: #2c5f88;
-                --accent-primary-text: #ffffff;
+                /* Dark Theme */
+                --bg-body: #111111;
+                --bg-sidebar: #181818;
+                --bg-card: #222222;
+                --bg-canvas: #141414;
+                --text-main: #eeeeee;
+                --text-muted: #888888;
+                --border: #333333;
+                --border-active: #ffffff;
+                --btn-bg: #222222;
+                --btn-text: #eeeeee;
+                --btn-hover-bg: #eeeeee;
+                --btn-hover-text: #111111;
+                --grid-color: rgba(255, 255, 255, 0.06);
+                --shape-fill: #ffffff;
+                --guide-unselected: rgba(255, 85, 85, 0.85);
+                --guide-selected: #3399ff;
+                --snap-center: #44bb44;
+                --snap-edge: #33ccff;
             }
         }
 
         body {
-            background: var(--bg-body);
-            color: var(--text-primary);
+            background-color: var(--bg-body);
+            color: var(--text-main);
             height: 100vh;
             overflow: hidden;
             display: flex;
-            transition: background 0.2s ease, color 0.2s ease;
         }
 
+        /* ===== SIDEBAR ===== */
         .sidebar {
             width: 300px;
-            background: var(--bg-sidebar);
-            border-right: 1px solid var(--border-color);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             height: 100%;
             flex-shrink: 0;
-            transition: background 0.2s ease, border-color 0.2s ease;
         }
 
         .controls {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .controls::-webkit-scrollbar { width: 4px; }
-        .controls::-webkit-scrollbar-track { background: transparent; }
-        .controls::-webkit-scrollbar-thumb { background: var(--border-color); }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
             padding: 12px;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            transition: background 0.2s ease, border-color 0.2s ease;
         }
 
-        .card-header {
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--card-header-color);
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 4px;
-        }
+        .controls::-webkit-scrollbar { width: 4px; }
+        .controls::-webkit-scrollbar-thumb { background: var(--border); }
 
-        .row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 11px;
-            color: var(--text-secondary);
-        }
-
-        .row .val {
-            color: var(--text-primary);
-            font-weight: bold;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            background: var(--input-track);
-            accent-color: var(--card-header-color);
-            height: 6px;
-        }
-
+        /* ===== PULLEY NODE CARDS ===== */
         .node-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
             padding: 10px;
             display: flex;
             flex-direction: column;
             gap: 8px;
             position: relative;
-            transition: opacity 0.15s, border-color 0.15s, background 0.2s ease;
+            font-size: 12px;
         }
 
         .node-card.selected {
-            border-color: var(--card-header-color);
+            border-color: var(--border-active);
+            outline: 1px solid var(--border-active);
         }
 
-        .node-card.dragging {
-            opacity: 0.3;
-        }
-
-        .node-card.drag-over-top {
-            border-top: 2px solid var(--card-header-color);
-        }
-
-        .node-card.drag-over-bottom {
-            border-bottom: 2px solid var(--card-header-color);
-        }
+        .node-card.dragging { opacity: 0.3; }
+        .node-card.drag-over-top { border-top: 2px solid var(--border-active); }
+        .node-card.drag-over-bottom { border-bottom: 2px solid var(--border-active); }
 
         .drag-handle {
             cursor: grab;
-            color: var(--text-muted);
-            font-size: 14px;
-            line-height: 1;
-            padding: 2px 6px;
             user-select: none;
-            flex-shrink: 0;
+            opacity: 0.6;
+            padding: 0 4px;
         }
-
-        .drag-handle:hover {
-            color: var(--text-primary);
-        }
-
-        .drag-handle:active {
-            cursor: grabbing;
-        }
+        .drag-handle:hover { opacity: 1; }
+        .drag-handle:active { cursor: grabbing; }
 
         .node-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .del-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 11px;
             font-weight: bold;
         }
 
-        .del-btn:hover { color: #d75f5f; }
+        /* ===== ULTRALIGHT HTML NATIVE BUTTONS ===== */
+        button {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            border: 1px solid var(--border);
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: background 0.1s, color 0.1s;
+        }
+
+        button:hover {
+            background: var(--btn-hover-bg);
+            color: var(--btn-hover-text);
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        .btn-del {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 2px 4px;
+            font-size: 11px;
+        }
+        .btn-del:hover {
+            background: none;
+            color: #ff3333;
+        }
 
         .side-toggle {
             display: grid;
@@ -225,64 +170,65 @@
         }
 
         .side-btn {
-            background: var(--side-btn-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
             padding: 4px;
             font-size: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
             text-align: center;
-            transition: all 0.15s ease;
+        }
+        .side-btn.active {
+            background: var(--btn-hover-bg);
+            color: var(--btn-hover-text);
+            border-color: var(--border-active);
         }
 
-        .side-btn:hover { background: var(--side-btn-hover); color: var(--text-primary); }
-        .side-btn.active { background: var(--side-btn-active); border-color: var(--border-color); color: var(--text-primary); }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+        }
 
-        .empty {
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            accent-color: var(--text-main);
+            cursor: pointer;
+        }
+
+        .empty-msg {
             text-align: center;
-            padding: 16px;
+            padding: 20px 10px;
             font-size: 11px;
             color: var(--text-muted);
-            border: 1px dashed var(--border-color);
-            line-height: 1.6;
+            border: 1px dashed var(--border);
+            line-height: 1.5;
         }
 
+        /* ===== SIDEBAR FOOTER ===== */
         .footer {
-            padding: 16px;
-            border-top: 1px solid var(--border-color);
+            padding: 12px;
+            border-top: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             gap: 8px;
-            transition: border-color 0.2s ease;
         }
 
-        .btn {
-            background: var(--btn-bg);
-            color: var(--btn-text);
-            border: 1px solid var(--btn-border);
-            padding: 10px;
-            font-weight: bold;
-            font-size: 11px;
-            cursor: pointer;
-            text-align: center;
-            text-transform: uppercase;
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .btn-block {
             width: 100%;
-            letter-spacing: 0.5px;
-            transition: all 0.15s ease;
         }
 
-        .btn:hover { background: var(--btn-hover-bg); }
-        .btn:active { background: var(--btn-active-bg); }
-
+        /* ===== CANVAS AREA ===== */
         .canvas-area {
             flex: 1;
             display: flex;
             position: relative;
-            background: var(--canvas-area-bg);
+            background-color: var(--bg-canvas);
             overflow: hidden;
-            transition: background 0.2s ease;
         }
 
         .canvas-wrap {
@@ -290,7 +236,6 @@
             height: 100%;
             position: relative;
             user-select: none;
-            overflow: hidden;
         }
 
         canvas {
@@ -299,108 +244,81 @@
             height: 100%;
         }
 
-        .canvas-toolbar {
+        /* ===== FLOATING TOOLBAR ===== */
+        .toolbar {
             position: absolute;
-            top: 16px;
-            right: 16px;
+            top: 12px;
+            right: 12px;
             display: flex;
-            align-items: center;
-            gap: 4px;
-            background: var(--toolbar-bg);
-            backdrop-filter: blur(8px);
-            border: 1px solid var(--toolbar-border);
-            padding: 4px;
-            border-radius: 6px;
+            gap: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 2px;
             z-index: 10;
-            box-shadow: 0 4px 16px var(--shadow-color);
-            transition: background 0.2s ease, border-color 0.2s ease;
         }
 
-        .tool-btn {
-            background: var(--tool-btn-bg);
-            color: var(--tool-btn-text);
-            border: 1px solid var(--toolbar-border);
-            height: 28px;
-            padding: 0 8px;
+        .toolbar button {
+            border: none;
+            padding: 4px 8px;
             font-size: 11px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.15s ease;
-            user-select: none;
-            white-space: nowrap;
         }
 
-        .tool-btn:hover {
-            background: var(--tool-btn-hover);
-            color: var(--text-primary);
-            border-color: var(--text-muted);
-        }
-
-        .tool-val {
-            min-width: 48px;
-            color: var(--text-secondary);
-            font-size: 10px;
-        }
-
-        .tool-val:hover {
-            color: var(--text-primary);
+        .toolbar button:hover {
+            background: var(--btn-hover-bg);
+            color: var(--btn-hover-text);
         }
 
         .canvas-hint {
             position: absolute;
-            bottom: 12px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 10px;
-            color: var(--hint-text);
+            color: var(--text-muted);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
             pointer-events: none;
             user-select: none;
-            letter-spacing: 0.5px;
-            background: var(--hint-bg);
-            padding: 4px 10px;
-            border-radius: 4px;
-            border: 1px solid var(--hint-border);
-            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
     <div class="sidebar">
+        <!-- Controls Container -->
         <div class="controls">
-            <div id="nodeList"></div>
+            <div id="nodeList" style="display: flex; flex-direction: column; gap: 8px;"></div>
 
-            <button class="btn" id="addBtn">+ Add Pulley</button>
+            <button class="btn-block" id="addBtn">+ Add Pulley</button>
         </div>
 
+        <!-- Sidebar Footer -->
         <div class="footer">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <button class="btn" id="saveBtn" title="Save Pulley System (JSON)">Save</button>
-                <button class="btn" id="importBtn" title="Import Pulley System (JSON)">Import</button>
+            <div class="footer-grid">
+                <button id="saveBtn" title="Save Pulley System (JSON)">Save</button>
+                <button id="importBtn" title="Import Pulley System (JSON)">Import</button>
             </div>
-            <button class="btn" id="exportBtn">Export SVG</button>
+            <button class="btn-block" id="exportBtn">Export SVG</button>
             <input type="file" id="importFileInput" accept=".json" style="display: none;">
         </div>
     </div>
 
+    <!-- Main Canvas Area -->
     <div class="canvas-area">
-        <div class="canvas-toolbar">
-            <button class="tool-btn" id="zoomOutBtn" title="Zoom Out (-)">-</button>
-            <button class="tool-btn tool-val" id="zoomResetBtn" title="Reset Zoom &amp; Pan">100%</button>
-            <button class="tool-btn" id="zoomInBtn" title="Zoom In (+)">+</button>
-            <button class="tool-btn" id="fitViewBtn" title="Fit View">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-                </svg>
-            </button>
+        <!-- Canvas Toolbar -->
+        <div class="toolbar">
+            <button id="zoomOutBtn" title="Zoom Out (-)">-</button>
+            <button id="zoomResetBtn" title="Reset Zoom &amp; Pan" style="min-width: 48px;">100%</button>
+            <button id="zoomInBtn" title="Zoom In (+)">+</button>
+            <button id="fitViewBtn" title="Fit View">FIT</button>
         </div>
+
         <div class="canvas-wrap" id="canvasWrap">
             <canvas id="c"></canvas>
         </div>
-        <div class="canvas-hint">Scroll to Zoom • Drag Background or Space+Drag to Pan</div>
+
+        <div class="canvas-hint">Scroll to Zoom • Space+Drag to Pan</div>
     </div>
 
     <script>
@@ -428,29 +346,27 @@
         let isSpacePressed = false;
         let initialViewDone = false;
 
-        // ===== NATIVE CSS MEDIA QUERY THEME DETECTOR =====
+        // ===== SYSTEM THEME DETECTOR =====
         const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: light)');
 
         function getThemeColors() {
             const isLight = colorSchemeQuery.matches;
             return {
                 isLight,
-                workspaceBg: isLight ? '#eaeaea' : '#1e1e1e',
-                gridColor: isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)',
-                emptyText: isLight ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.3)',
-                shapeFill: isLight ? '#2a2a2a' : '#e4e4e4',
-                guideUnselected: isLight ? 'rgba(175, 95, 95, 0.7)' : 'rgba(215, 95, 95, 0.7)',
-                guideSelected: isLight ? '#3a75a4' : '#87afd7',
-                centerDotUnselected: isLight ? 'rgba(175, 95, 95, 0.9)' : 'rgba(215, 95, 95, 0.85)',
-                centerDotSelected: isLight ? '#3a75a4' : '#87afd7',
-                snapGuideCenter: isLight ? '#4e8b4e' : '#87af87',
-                snapGuideEdge: isLight ? '#3a75a4' : '#5fafd7',
+                workspaceBg: isLight ? '#fafafa' : '#141414',
+                gridColor: isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.06)',
+                emptyText: isLight ? '#888888' : '#666666',
+                shapeFill: isLight ? '#000000' : '#ffffff',
+                guideUnselected: isLight ? 'rgba(220, 50, 47, 0.8)' : 'rgba(255, 85, 85, 0.85)',
+                guideSelected: isLight ? '#0066cc' : '#3399ff',
+                centerDotUnselected: isLight ? 'rgba(220, 50, 47, 0.9)' : 'rgba(255, 85, 85, 0.9)',
+                centerDotSelected: isLight ? '#0066cc' : '#3399ff',
+                snapGuideCenter: isLight ? '#008800' : '#44bb44',
+                snapGuideEdge: isLight ? '#0088cc' : '#33ccff',
             };
         }
 
-        colorSchemeQuery.addEventListener('change', () => {
-            draw();
-        });
+        colorSchemeQuery.addEventListener('change', () => { draw(); });
 
         function getDpr() {
             return window.devicePixelRatio || 1;
@@ -628,8 +544,8 @@
             if (n) {
                 n.r = parseFloat(val);
                 if (el) {
-                    const v = el.previousElementSibling.querySelector('.val');
-                    if (v) v.innerText = val;
+                    const badge = el.parentElement.querySelector('.val');
+                    if (badge) badge.innerText = val;
                 }
                 draw();
             }
@@ -639,7 +555,7 @@
             nodeList.innerHTML = '';
 
             if (nodes.length === 0) {
-                nodeList.innerHTML = '<div class="empty">NO PULLEYS.<br>ADD PULLEYS TO BEGIN.</div>';
+                nodeList.innerHTML = '<div class="empty-msg">NO PULLEYS.<br>ADD PULLEYS TO BEGIN.</div>';
                 return;
             }
 
@@ -649,15 +565,18 @@
                 card.dataset.index = i;
                 card.innerHTML = `
                     <div class="node-header">
-                        <span class="drag-handle" title="Drag handle vertically to reorder" draggable="true">⠿</span>
-                        <button class="del-btn" onclick="deleteNode(${n.id})"> [X]</button>
+                        <div>
+                            <span class="drag-handle" title="Drag handle vertically to reorder" draggable="true">⠿</span>
+                            <span>P${n.id}</span>
+                        </div>
+                        <button class="btn-del" onclick="deleteNode(${n.id})">[X]</button>
                     </div>
                     <div class="side-toggle">
                         <button class="side-btn ${n.side === -1 ? 'active' : ''}" onclick="setSide(${n.id}, -1)">Left (CCW)</button>
                         <button class="side-btn ${n.side === 1 ? 'active' : ''}" onclick="setSide(${n.id}, 1)">Right (CW)</button>
                     </div>
                     <div>
-                        <div class="row">Radius <span class="val">${n.r}</span></div>
+                        <div class="row"><span>Radius</span><span class="val" style="font-weight: bold;">${n.r}</span></div>
                         <input type="range" min="10" max="300" value="${n.r}" oninput="updateR(${n.id}, this.value, this)">
                     </div>
                 `;
@@ -853,7 +772,7 @@
                 ctx.lineWidth = 1 / zoom;
                 ctx.setLineDash([4 / zoom, 4 / zoom]);
                 guides.forEach(g => {
-                    ctx.strokeStyle = g.color === '#10b981' ? colors.snapGuideCenter : colors.snapGuideEdge;
+                    ctx.strokeStyle = g.color === '#008800' || g.color === '#44bb44' ? colors.snapGuideCenter : colors.snapGuideEdge;
                     ctx.beginPath();
                     ctx.moveTo(g.x1, g.y1);
                     ctx.lineTo(g.x2, g.y2);
@@ -870,7 +789,6 @@
         function buildSVG() {
             if (nodes.length === 0) return '';
 
-            // Compute tight bounding box across all nodes/circles
             let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             nodes.forEach(n => {
                 if (n.x - n.r < minX) minX = n.x - n.r;
@@ -959,6 +877,93 @@
             URL.revokeObjectURL(url);
         }
 
+        // ===== SAVE & IMPORT (JSON) =====
+        function getTimestamp() {
+            const now = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+            const timeStr = `${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+            return `${dateStr}_${timeStr}`;
+        }
+
+        function downloadFile(content, fileName, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function savePulleySystem() {
+            if (nodes.length === 0) {
+                alert('No pulleys to save!');
+                return;
+            }
+            const data = {
+                version: 1,
+                generator: "String & Pulley Logo Tool",
+                timestamp: new Date().toISOString(),
+                nodes: nodes.map(n => ({
+                    id: n.id,
+                    x: n.x,
+                    y: n.y,
+                    r: n.r,
+                    side: n.side
+                }))
+            };
+            const jsonContent = JSON.stringify(data, null, 2);
+            const timestamp = getTimestamp();
+            downloadFile(jsonContent, `pulley-system_${timestamp}.json`, 'application/json;charset=utf-8');
+        }
+
+        function importPulleySystem(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    const parsed = JSON.parse(content);
+                    let rawNodes = [];
+                    if (Array.isArray(parsed)) {
+                        rawNodes = parsed;
+                    } else if (parsed && Array.isArray(parsed.nodes)) {
+                        rawNodes = parsed.nodes;
+                    } else {
+                        throw new Error('Expected array of nodes or object with "nodes" property.');
+                    }
+
+                    const importedNodes = rawNodes.map((n, idx) => ({
+                        id: typeof n.id === 'number' ? n.id : idx + 1,
+                        x: typeof n.x === 'number' ? n.x : 400,
+                        y: typeof n.y === 'number' ? n.y : 400,
+                        r: typeof n.r === 'number' ? Math.max(5, n.r) : 60,
+                        side: n.side === -1 ? -1 : 1
+                    }));
+
+                    if (importedNodes.length === 0) {
+                        alert('No valid pulley nodes found in the JSON file.');
+                        return;
+                    }
+
+                    nodes = importedNodes;
+                    nextId = nodes.reduce((max, n) => Math.max(max, n.id || 0), 0) + 1;
+                    selectedId = nodes.length > 0 ? nodes[0].id : null;
+
+                    renderUI();
+                    fitView();
+                    draw();
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to import file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
         // ===== INTERACTION =====
         canvasWrap.addEventListener('wheel', (e) => {
             e.preventDefault();
@@ -970,7 +975,7 @@
         }, { passive: false });
 
         window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'INPUT') {
+            if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
                 isSpacePressed = true;
                 canvasWrap.style.cursor = 'grab';
             }
@@ -1074,12 +1079,12 @@
                             const centerVal = rawY + (snapVal - rawVal);
                             bestSnapY = { dist: d, snapVal: centerVal, guides: [{ x1: viewMinX, y1: guideY, x2: viewMaxX, y2: guideY, color }] };
                         } else if (d < thresh && bestSnapY && Math.abs(d - bestSnapY.dist) < 0.5) {
-                            bestSnapY.guides.push({ x1: viewMinX, y1: guideY, x2: viewMaxX, y2: guideY, color });
+                            bestSnapY.guides.push({ x1: viewMinX, y1: guideY, x2: guideY, y2: guideY, color });
                         }
                     }
 
-                    const centerColor = '#10b981';
-                    const edgeColor = '#06b6d4';
+                    const centerColor = '#008800';
+                    const edgeColor = '#0088cc';
 
                     nodes.forEach(o => {
                         if (o.id === n.id) return;
@@ -1149,6 +1154,37 @@
         document.getElementById('fitViewBtn').addEventListener('click', fitView);
 
         document.getElementById('exportBtn').addEventListener('click', exportSVG);
+        document.getElementById('saveBtn').addEventListener('click', savePulleySystem);
+
+        const importFileInput = document.getElementById('importFileInput');
+        document.getElementById('importBtn').addEventListener('click', () => {
+            importFileInput.value = '';
+            importFileInput.click();
+        });
+
+        importFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                importPulleySystem(e.target.files[0]);
+            }
+        });
+
+        // Canvas drag-and-drop file import
+        canvasWrap.addEventListener('dragover', (e) => {
+            if (e.dataTransfer.types && (e.dataTransfer.types.includes('Files') || Array.from(e.dataTransfer.types).includes('Files'))) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+            }
+        });
+
+        canvasWrap.addEventListener('drop', (e) => {
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                const file = e.dataTransfer.files[0];
+                if (file.name.endsWith('.json')) {
+                    e.preventDefault();
+                    importPulleySystem(file);
+                }
+            }
+        });
 
         window.addEventListener('resize', setupCanvas);
 

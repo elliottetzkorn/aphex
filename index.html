@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>String &amp; Pulley Logo Tool</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Monaco, Consolas, monospace;
+        }
+
+        /* ===== SEOUL CODE THEME (NATIVE CSS MEDIA QUERIES) ===== */
+        :root {
+            /* Seoul Dark (Default) */
+            --bg-body: #3a3a3a;
+            --bg-sidebar: #303030;
+            --border-color: #4e4e4e;
+            --card-bg: #262626;
+            --card-header-color: #87afd7;
+            --text-primary: #e4e4e4;
+            --text-secondary: #9e9e9e;
+            --text-muted: #767676;
+            --btn-bg: #3a3a3a;
+            --btn-hover-bg: #4e4e4e;
+            --btn-active-bg: #262626;
+            --btn-text: #e4e4e4;
+            --btn-border: #4e4e4e;
+            --input-track: #262626;
+            --side-btn-bg: #303030;
+            --side-btn-hover: #3a3a3a;
+            --side-btn-active: #4e4e4e;
+            --canvas-area-bg: #1e1e1e;
+            --toolbar-bg: rgba(48, 48, 48, 0.92);
+            --toolbar-border: #4e4e4e;
+            --tool-btn-bg: #3a3a3a;
+            --tool-btn-text: #d0d0d0;
+            --tool-btn-hover: #4e4e4e;
+            --hint-bg: rgba(38, 38, 38, 0.88);
+            --hint-border: #4e4e4e;
+            --hint-text: #9e9e9e;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+            --accent-primary: #5f87af;
+            --accent-primary-hover: #4e76a0;
+            --accent-primary-text: #ffffff;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                /* Seoul Light */
+                --bg-body: #e1e1e1;
+                --bg-sidebar: #ebebeb;
+                --border-color: #d0d0d0;
+                --card-bg: #f5f5f5;
+                --card-header-color: #3a75a4;
+                --text-primary: #333333;
+                --text-secondary: #626262;
+                --text-muted: #8a8a8a;
+                --btn-bg: #f5f5f5;
+                --btn-hover-bg: #e1e1e1;
+                --btn-active-bg: #d0d0d0;
+                --btn-text: #333333;
+                --btn-border: #c8c8c8;
+                --input-track: #d0d0d0;
+                --side-btn-bg: #ffffff;
+                --side-btn-hover: #e8e8e8;
+                --side-btn-active: #d8d8d8;
+                --canvas-area-bg: #eaeaea;
+                --toolbar-bg: rgba(245, 245, 245, 0.92);
+                --toolbar-border: #c8c8c8;
+                --tool-btn-bg: #ffffff;
+                --tool-btn-text: #444444;
+                --tool-btn-hover: #e8e8e8;
+                --hint-bg: rgba(245, 245, 245, 0.88);
+                --hint-border: #c8c8c8;
+                --hint-text: #626262;
+                --shadow-color: rgba(0, 0, 0, 0.08);
+                --accent-primary: #3a75a4;
+                --accent-primary-hover: #2c5f88;
+                --accent-primary-text: #ffffff;
+            }
+        }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex-shrink: 0;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .controls {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .controls::-webkit-scrollbar { width: 4px; }
+        .controls::-webkit-scrollbar-track { background: transparent; }
+        .controls::-webkit-scrollbar-thumb { background: var(--border-color); }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card-header {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--card-header-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .row .val {
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            background: var(--input-track);
+            accent-color: var(--card-header-color);
+            height: 6px;
+        }
+
+        .node-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            transition: opacity 0.15s, border-color 0.15s, background 0.2s ease;
+        }
+
+        .node-card.selected {
+            border-color: var(--card-header-color);
+        }
+
+        .node-card.dragging {
+            opacity: 0.3;
+        }
+
+        .node-card.drag-over-top {
+            border-top: 2px solid var(--card-header-color);
+        }
+
+        .node-card.drag-over-bottom {
+            border-bottom: 2px solid var(--card-header-color);
+        }
+
+        .drag-handle {
+            cursor: grab;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1;
+            padding: 2px 6px;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .drag-handle:hover {
+            color: var(--text-primary);
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .del-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .del-btn:hover { color: #d75f5f; }
+
+        .side-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+
+        .side-btn {
+            background: var(--side-btn-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+
+        .side-btn:hover { background: var(--side-btn-hover); color: var(--text-primary); }
+        .side-btn.active { background: var(--side-btn-active); border-color: var(--border-color); color: var(--text-primary); }
+
+        .empty {
+            text-align: center;
+            padding: 16px;
+            font-size: 11px;
+            color: var(--text-muted);
+            border: 1px dashed var(--border-color);
+            line-height: 1.6;
+        }
+
+        .footer {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color 0.2s ease;
+        }
+
+        .btn {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            border: 1px solid var(--btn-border);
+            padding: 10px;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: center;
+            text-transform: uppercase;
+            width: 100%;
+            letter-spacing: 0.5px;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover { background: var(--btn-hover-bg); }
+        .btn:active { background: var(--btn-active-bg); }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            position: relative;
+            background: var(--canvas-area-bg);
+            overflow: hidden;
+            transition: background 0.2s ease;
+        }
+
+        .canvas-wrap {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-toolbar {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--toolbar-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--toolbar-border);
+            padding: 4px;
+            border-radius: 6px;
+            z-index: 10;
+            box-shadow: 0 4px 16px var(--shadow-color);
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .tool-btn {
+            background: var(--tool-btn-bg);
+            color: var(--tool-btn-text);
+            border: 1px solid var(--toolbar-border);
+            height: 28px;
+            padding: 0 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .tool-btn:hover {
+            background: var(--tool-btn-hover);
+            color: var(--text-primary);
+            border-color: var(--text-muted);
+        }
+
+        .tool-val {
+            min-width: 48px;
+            color: var(--text-secondary);
+            font-size: 10px;
+        }
+
+        .tool-val:hover {
+            color: var(--text-primary);
+        }
+
+        .canvas-hint {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: var(--hint-text);
+            pointer-events: none;
+            user-select: none;
+            letter-spacing: 0.5px;
+            background: var(--hint-bg);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--hint-border);
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="controls">
+            <div id="nodeList"></div>
+
+            <button class="btn" id="addBtn">+ Add Pulley</button>
+        </div>
+
+        <div class="footer">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button class="btn" id="saveBtn" title="Save Pulley System (JSON)">Save</button>
+                <button class="btn" id="importBtn" title="Import Pulley System (JSON)">Import</button>
+            </div>
+            <button class="btn" id="exportBtn">Export SVG</button>
+            <input type="file" id="importFileInput" accept=".json" style="display: none;">
+        </div>
+    </div>
+
+    <div class="canvas-area">
+        <div class="canvas-toolbar">
+            <button class="tool-btn" id="zoomOutBtn" title="Zoom Out (-)">-</button>
+            <button class="tool-btn tool-val" id="zoomResetBtn" title="Reset Zoom &amp; Pan">100%</button>
+            <button class="tool-btn" id="zoomInBtn" title="Zoom In (+)">+</button>
+            <button class="tool-btn" id="fitViewBtn" title="Fit View">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                </svg>
+            </button>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap">
+            <canvas id="c"></canvas>
+        </div>
+        <div class="canvas-hint">Scroll to Zoom • Drag Background or Space+Drag to Pan</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        const nodeList = document.getElementById('nodeList');
+        const canvasWrap = document.getElementById('canvasWrap');
+        const zoomResetBtn = document.getElementById('zoomResetBtn');
+
+        let nodes = [];
+        let nextId = 1;
+        let selectedId = null;
+
+        // Node drag state
+        let isDragging = false;
+        let dragOff = { x: 0, y: 0 };
+        let guides = [];
+
+        // Viewport pan & zoom state
+        let zoom = 1.0;
+        let panX = 0;
+        let panY = 0;
+        let isPanning = false;
+        let panStart = { x: 0, y: 0 };
+        let isSpacePressed = false;
+        let initialViewDone = false;
+
+        // ===== NATIVE CSS MEDIA QUERY THEME DETECTOR =====
+        const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: light)');
+
+        function getThemeColors() {
+            const isLight = colorSchemeQuery.matches;
+            return {
+                isLight,
+                workspaceBg: isLight ? '#eaeaea' : '#1e1e1e',
+                gridColor: isLight ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)',
+                emptyText: isLight ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.3)',
+                shapeFill: isLight ? '#2a2a2a' : '#e4e4e4',
+                guideUnselected: isLight ? 'rgba(175, 95, 95, 0.7)' : 'rgba(215, 95, 95, 0.7)',
+                guideSelected: isLight ? '#3a75a4' : '#87afd7',
+                centerDotUnselected: isLight ? 'rgba(175, 95, 95, 0.9)' : 'rgba(215, 95, 95, 0.85)',
+                centerDotSelected: isLight ? '#3a75a4' : '#87afd7',
+                snapGuideCenter: isLight ? '#4e8b4e' : '#87af87',
+                snapGuideEdge: isLight ? '#3a75a4' : '#5fafd7',
+            };
+        }
+
+        colorSchemeQuery.addEventListener('change', () => {
+            draw();
+        });
+
+        function getDpr() {
+            return window.devicePixelRatio || 1;
+        }
+
+        function setupCanvas() {
+            const wrapRect = canvasWrap.getBoundingClientRect();
+            const dpr = getDpr();
+            canvas.width = Math.floor(wrapRect.width * dpr);
+            canvas.height = Math.floor(wrapRect.height * dpr);
+
+            if (!initialViewDone && wrapRect.width > 0 && wrapRect.height > 0) {
+                fitView();
+                initialViewDone = true;
+            } else {
+                draw();
+            }
+        }
+
+        function mousePos(e) {
+            const r = canvas.getBoundingClientRect();
+            const cssX = (e.clientX - r.left);
+            const cssY = (e.clientY - r.top);
+
+            return {
+                x: (cssX - panX) / zoom,
+                y: (cssY - panY) / zoom
+            };
+        }
+
+        function updateZoomDisplay() {
+            if (zoomResetBtn) {
+                zoomResetBtn.innerText = Math.round(zoom * 100) + '%';
+            }
+        }
+
+        function setZoom(newZoom, centerX, centerY) {
+            const clampedZoom = Math.min(Math.max(newZoom, 0.15), 10.0);
+            if (centerX !== undefined && centerY !== undefined) {
+                const worldX = (centerX - panX) / zoom;
+                const worldY = (centerY - panY) / zoom;
+                zoom = clampedZoom;
+                panX = centerX - worldX * zoom;
+                panY = centerY - worldY * zoom;
+            } else {
+                const wrapRect = canvasWrap.getBoundingClientRect();
+                const cx = wrapRect.width / 2;
+                const cy = wrapRect.height / 2;
+                const worldX = (cx - panX) / zoom;
+                const worldY = (cy - panY) / zoom;
+                zoom = clampedZoom;
+                panX = cx - worldX * zoom;
+                panY = cy - worldY * zoom;
+            }
+            updateZoomDisplay();
+            draw();
+        }
+
+        function fitView() {
+            const wrapRect = canvasWrap.getBoundingClientRect();
+            const w = wrapRect.width || 800;
+            const h = wrapRect.height || 600;
+
+            if (nodes.length === 0) {
+                zoom = 1.0;
+                panX = 0;
+                panY = 0;
+                updateZoomDisplay();
+                draw();
+                return;
+            }
+
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            nodes.forEach(n => {
+                if (n.x - n.r < minX) minX = n.x - n.r;
+                if (n.x + n.r > maxX) maxX = n.x + n.r;
+                if (n.y - n.r < minY) minY = n.y - n.r;
+                if (n.y + n.r > maxY) maxY = n.y + n.r;
+            });
+
+            const currentW = maxX - minX;
+            const currentH = maxY - minY;
+
+            if (currentW > 0 && currentH > 0) {
+                const margin = 60;
+                const fitScale = Math.min((w - margin * 2) / currentW, (h - margin * 2) / currentH);
+                zoom = Math.min(Math.max(fitScale, 0.15), 5.0);
+                const centerX = minX + currentW / 2;
+                const centerY = minY + currentH / 2;
+                panX = (w / 2) - centerX * zoom;
+                panY = (h / 2) - centerY * zoom;
+            }
+
+            updateZoomDisplay();
+            draw();
+        }
+
+        const dist = (a, b) => Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+        const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
+
+        // ===== CORE MATH =====
+        function tangentSegment(ax, ay, ar, sideA, bx, by, br, sideB) {
+            const dx = bx - ax;
+            const dy = by - ay;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < 1e-6) return null;
+
+            const theta = Math.atan2(dy, dx);
+
+            let phi;
+            if (sideA === sideB) {
+                const rDiff = ar - br;
+                if (d <= Math.abs(rDiff)) return null;
+                phi = Math.acos(clamp(rDiff / d, -1, 1));
+            } else {
+                const rSum = ar + br;
+                if (d <= rSum) return null;
+                phi = Math.acos(clamp(rSum / d, -1, 1));
+            }
+
+            let angle;
+            if (sideA === 1) {
+                angle = theta + phi;
+            } else {
+                angle = theta - phi;
+            }
+
+            const t1x = ax + ar * Math.cos(angle);
+            const t1y = ay + ar * Math.sin(angle);
+
+            let t2x, t2y;
+            if (sideA === sideB) {
+                t2x = bx + br * Math.cos(angle);
+                t2y = by + br * Math.sin(angle);
+            } else {
+                const angleB = angle + Math.PI;
+                t2x = bx + br * Math.cos(angleB);
+                t2y = by + br * Math.sin(angleB);
+            }
+
+            return { t1: { x: t1x, y: t1y }, t2: { x: t2x, y: t2y }, angle };
+        }
+
+        function buildStringPath() {
+            if (nodes.length < 2) return null;
+
+            const n = nodes.length;
+            const segments = [];
+
+            for (let i = 0; i < n; i++) {
+                const a = nodes[i];
+                const b = nodes[(i + 1) % n];
+                const seg = tangentSegment(a.x, a.y, a.r, a.side, b.x, b.y, b.r, b.side);
+                segments.push(seg);
+            }
+
+            return segments;
+        }
+
+        // ===== UI =====
+        window.deleteNode = function(id) {
+            nodes = nodes.filter(n => n.id !== id);
+            if (selectedId === id) selectedId = null;
+            renderUI();
+            draw();
+        };
+
+        window.setSide = function(id, side) {
+            const n = nodes.find(x => x.id === id);
+            if (n) { n.side = side; renderUI(); draw(); }
+        };
+
+        window.updateR = function(id, val, el) {
+            const n = nodes.find(x => x.id === id);
+            if (n) {
+                n.r = parseFloat(val);
+                if (el) {
+                    const v = el.previousElementSibling.querySelector('.val');
+                    if (v) v.innerText = val;
+                }
+                draw();
+            }
+        };
+
+        function renderUI() {
+            nodeList.innerHTML = '';
+
+            if (nodes.length === 0) {
+                nodeList.innerHTML = '<div class="empty">NO PULLEYS.<br>ADD PULLEYS TO BEGIN.</div>';
+                return;
+            }
+
+            nodes.forEach((n, i) => {
+                const card = document.createElement('div');
+                card.className = 'node-card' + (selectedId === n.id ? ' selected' : '');
+                card.dataset.index = i;
+                card.innerHTML = `
+                    <div class="node-header">
+                        <span class="drag-handle" title="Drag handle vertically to reorder" draggable="true">⠿</span>
+                        <button class="del-btn" onclick="deleteNode(${n.id})"> [X]</button>
+                    </div>
+                    <div class="side-toggle">
+                        <button class="side-btn ${n.side === -1 ? 'active' : ''}" onclick="setSide(${n.id}, -1)">Left (CCW)</button>
+                        <button class="side-btn ${n.side === 1 ? 'active' : ''}" onclick="setSide(${n.id}, 1)">Right (CW)</button>
+                    </div>
+                    <div>
+                        <div class="row">Radius <span class="val">${n.r}</span></div>
+                        <input type="range" min="10" max="300" value="${n.r}" oninput="updateR(${n.id}, this.value, this)">
+                    </div>
+                `;
+
+                card.addEventListener('mousedown', (e) => {
+                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+                    selectedId = n.id;
+                    renderUI();
+                    draw();
+                });
+
+                // Handle-only dragging for vertical reordering
+                const handle = card.querySelector('.drag-handle');
+                handle.addEventListener('dragstart', (e) => {
+                    e.stopPropagation();
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', i.toString());
+                    requestAnimationFrame(() => card.classList.add('dragging'));
+                });
+
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                    nodeList.querySelectorAll('.node-card').forEach(c => {
+                        c.classList.remove('drag-over-top', 'drag-over-bottom');
+                    });
+                });
+
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    const rect = card.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    nodeList.querySelectorAll('.node-card').forEach(c => {
+                        c.classList.remove('drag-over-top', 'drag-over-bottom');
+                    });
+                    if (e.clientY < midY) {
+                        card.classList.add('drag-over-top');
+                    } else {
+                        card.classList.add('drag-over-bottom');
+                    }
+                });
+
+                card.addEventListener('dragleave', () => {
+                    card.classList.remove('drag-over-top', 'drag-over-bottom');
+                });
+
+                card.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const fromIndexStr = e.dataTransfer.getData('text/plain');
+                    if (!fromIndexStr) return;
+                    const fromIndex = parseInt(fromIndexStr, 10);
+                    const rect = card.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    let toIndex = parseInt(card.dataset.index, 10);
+                    if (e.clientY >= midY) toIndex += 1;
+                    if (fromIndex === toIndex || fromIndex === toIndex - 1) {
+                        nodeList.querySelectorAll('.node-card').forEach(c => {
+                            c.classList.remove('drag-over-top', 'drag-over-bottom');
+                        });
+                        return;
+                    }
+                    const [moved] = nodes.splice(fromIndex, 1);
+                    const insertAt = fromIndex < toIndex ? toIndex - 1 : toIndex;
+                    nodes.splice(insertAt, 0, moved);
+                    renderUI();
+                    draw();
+                });
+
+                nodeList.appendChild(card);
+            });
+        }
+
+        // ===== DRAWING =====
+        function draw() {
+            const wrapRect = canvasWrap.getBoundingClientRect();
+            const dpr = getDpr();
+            const targetW = Math.floor(wrapRect.width * dpr);
+            const targetH = Math.floor(wrapRect.height * dpr);
+
+            if (canvas.width !== targetW || canvas.height !== targetH) {
+                canvas.width = targetW;
+                canvas.height = targetH;
+            }
+
+            const cssW = wrapRect.width;
+            const cssH = wrapRect.height;
+            const colors = getThemeColors();
+
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.scale(dpr, dpr);
+
+            // Full Canvas Workspace Background
+            ctx.fillStyle = colors.workspaceBg;
+            ctx.fillRect(0, 0, cssW, cssH);
+
+            // Apply Viewport Pan & Zoom
+            ctx.save();
+            ctx.translate(panX, panY);
+            ctx.scale(zoom, zoom);
+
+            // Infinite Dynamic Grid across visible viewport
+            const gridSize = 40;
+            const startX = Math.floor((-panX / zoom) / gridSize) * gridSize - gridSize;
+            const endX = Math.ceil(((cssW - panX) / zoom) / gridSize) * gridSize + gridSize;
+            const startY = Math.floor((-panY / zoom) / gridSize) * gridSize - gridSize;
+            const endY = Math.ceil(((cssH - panY) / zoom) / gridSize) * gridSize + gridSize;
+
+            ctx.strokeStyle = colors.gridColor;
+            ctx.lineWidth = 1 / zoom;
+            ctx.beginPath();
+            for (let x = startX; x <= endX; x += gridSize) {
+                ctx.moveTo(x, startY); ctx.lineTo(x, endY);
+            }
+            for (let y = startY; y <= endY; y += gridSize) {
+                ctx.moveTo(startX, y); ctx.lineTo(endX, y);
+            }
+            ctx.stroke();
+
+            // Geometry
+            if (nodes.length === 0) {
+                ctx.save();
+                ctx.fillStyle = colors.emptyText;
+                ctx.font = `${Math.max(12, 14 / zoom)}px ui-monospace, monospace`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const centerWorldX = (cssW / 2 - panX) / zoom;
+                const centerWorldY = (cssH / 2 - panY) / zoom;
+                ctx.fillText('Add pulleys and string them together.', centerWorldX, centerWorldY);
+                ctx.restore();
+            } else if (nodes.length >= 2) {
+                const segments = buildStringPath();
+
+                ctx.save();
+                ctx.fillStyle = colors.shapeFill;
+                ctx.beginPath();
+
+                for (let i = 0; i < nodes.length; i++) {
+                    const seg = segments[i];
+                    const nextSeg = segments[(i + 1) % nodes.length];
+                    const node = nodes[(i + 1) % nodes.length];
+
+                    if (i === 0 && seg) {
+                        ctx.moveTo(seg.t1.x, seg.t1.y);
+                    }
+
+                    if (seg) {
+                        ctx.lineTo(seg.t2.x, seg.t2.y);
+                    }
+
+                    if (seg && nextSeg) {
+                        const arrivalAngle = Math.atan2(seg.t2.y - node.y, seg.t2.x - node.x);
+                        const departAngle = Math.atan2(nextSeg.t1.y - node.y, nextSeg.t1.x - node.x);
+
+                        const ccw = node.side === 1;
+                        ctx.arc(node.x, node.y, node.r, arrivalAngle, departAngle, ccw);
+                    }
+                }
+
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            } else if (nodes.length === 1) {
+                ctx.save();
+                ctx.fillStyle = colors.shapeFill;
+                ctx.beginPath();
+                ctx.arc(nodes[0].x, nodes[0].y, nodes[0].r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Pulley construction guides
+            ctx.save();
+            nodes.forEach(n => {
+                ctx.strokeStyle = selectedId === n.id ? colors.guideSelected : colors.guideUnselected;
+                ctx.lineWidth = 1 / zoom;
+                ctx.setLineDash([3 / zoom, 3 / zoom]);
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.fillStyle = selectedId === n.id ? colors.centerDotSelected : colors.centerDotUnselected;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, 3 / zoom, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.restore();
+
+            // Snap alignment guides
+            if (guides.length > 0) {
+                ctx.save();
+                ctx.lineWidth = 1 / zoom;
+                ctx.setLineDash([4 / zoom, 4 / zoom]);
+                guides.forEach(g => {
+                    ctx.strokeStyle = g.color === '#10b981' ? colors.snapGuideCenter : colors.snapGuideEdge;
+                    ctx.beginPath();
+                    ctx.moveTo(g.x1, g.y1);
+                    ctx.lineTo(g.x2, g.y2);
+                    ctx.stroke();
+                });
+                ctx.restore();
+            }
+
+            ctx.restore(); // Restore pan/zoom transform
+            ctx.restore(); // Restore dpr scale
+        }
+
+        // ===== SVG EXPORT =====
+        function buildSVG() {
+            if (nodes.length === 0) return '';
+
+            // Compute tight bounding box across all nodes/circles
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            nodes.forEach(n => {
+                if (n.x - n.r < minX) minX = n.x - n.r;
+                if (n.x + n.r > maxX) maxX = n.x + n.r;
+                if (n.y - n.r < minY) minY = n.y - n.r;
+                if (n.y + n.r > maxY) maxY = n.y + n.r;
+            });
+
+            const w = maxX - minX;
+            const h = maxY - minY;
+
+            if (w <= 0 || h <= 0) return '';
+
+            let d = '';
+
+            if (nodes.length === 1) {
+                const n = nodes[0];
+                const cx = n.x, cy = n.y, r = n.r;
+                d = `M ${(cx + r).toFixed(2)} ${cy.toFixed(2)} ` +
+                    `A ${r.toFixed(2)} ${r.toFixed(2)} 0 1 1 ${(cx - r).toFixed(2)} ${cy.toFixed(2)} ` +
+                    `A ${r.toFixed(2)} ${r.toFixed(2)} 0 1 1 ${(cx + r).toFixed(2)} ${cy.toFixed(2)} Z`;
+            } else {
+                const segments = buildStringPath();
+                if (!segments) return '';
+
+                for (let i = 0; i < nodes.length; i++) {
+                    const seg = segments[i];
+                    const nextSeg = segments[(i + 1) % nodes.length];
+                    const node = nodes[(i + 1) % nodes.length];
+
+                    if (i === 0 && seg) {
+                        d += `M ${seg.t1.x.toFixed(2)} ${seg.t1.y.toFixed(2)} `;
+                    }
+
+                    if (seg) {
+                        d += `L ${seg.t2.x.toFixed(2)} ${seg.t2.y.toFixed(2)} `;
+                    }
+
+                    if (seg && nextSeg) {
+                        const arrivalAngle = Math.atan2(seg.t2.y - node.y, seg.t2.x - node.x);
+                        const departAngle = Math.atan2(nextSeg.t1.y - node.y, nextSeg.t1.x - node.x);
+
+                        const sweepCW = node.side === 1;
+                        let arcAngle = departAngle - arrivalAngle;
+
+                        if (sweepCW) {
+                            if (arcAngle > 0) arcAngle -= 2 * Math.PI;
+                        } else {
+                            if (arcAngle < 0) arcAngle += 2 * Math.PI;
+                        }
+
+                        const largeArc = Math.abs(arcAngle) > Math.PI ? 1 : 0;
+                        const sweepFlag = sweepCW ? 0 : 1;
+
+                        const endX = node.x + node.r * Math.cos(departAngle);
+                        const endY = node.y + node.r * Math.sin(departAngle);
+
+                        d += `A ${node.r.toFixed(2)} ${node.r.toFixed(2)} 0 ${largeArc} ${sweepFlag} ${endX.toFixed(2)} ${endY.toFixed(2)} `;
+                    }
+                }
+
+                d += 'Z';
+            }
+
+            const minXStr = minX.toFixed(2);
+            const minYStr = minY.toFixed(2);
+            const wStr = w.toFixed(2);
+            const hStr = h.toFixed(2);
+
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minXStr} ${minYStr} ${wStr} ${hStr}" width="${wStr}" height="${hStr}">
+  <path d="${d}" fill="#000000" fill-rule="evenodd" stroke="none" />
+</svg>`;
+        }
+
+        function exportSVG() {
+            const svg = buildSVG();
+            if (!svg) return;
+            const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'logo.svg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== INTERACTION =====
+        canvasWrap.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const r = canvasWrap.getBoundingClientRect();
+            const cursorX = e.clientX - r.left;
+            const cursorY = e.clientY - r.top;
+            const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
+            setZoom(zoom * zoomFactor, cursorX, cursorY);
+        }, { passive: false });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !e.repeat && document.activeElement.tagName !== 'INPUT') {
+                isSpacePressed = true;
+                canvasWrap.style.cursor = 'grab';
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                isSpacePressed = false;
+                canvasWrap.style.cursor = 'default';
+            }
+        });
+
+        canvasWrap.addEventListener('mousedown', (e) => {
+            const p = mousePos(e);
+            let hit = null;
+
+            if (e.button === 0 && !isSpacePressed) {
+                for (let i = nodes.length - 1; i >= 0; i--) {
+                    if (dist(p, nodes[i]) <= nodes[i].r + (8 / zoom)) {
+                        hit = nodes[i];
+                        break;
+                    }
+                }
+            }
+
+            if (hit) {
+                selectedId = hit.id;
+                isDragging = true;
+                dragOff.x = p.x - hit.x;
+                dragOff.y = p.y - hit.y;
+                canvasWrap.style.cursor = 'grabbing';
+            } else {
+                if (e.button === 0 && !isSpacePressed) {
+                    selectedId = null;
+                }
+                isPanning = true;
+                panStart = { x: e.clientX, y: e.clientY };
+                canvasWrap.style.cursor = 'grabbing';
+            }
+
+            renderUI();
+            draw();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isPanning) {
+                const dx = e.clientX - panStart.x;
+                const dy = e.clientY - panStart.y;
+                panX += dx;
+                panY += dy;
+                panStart = { x: e.clientX, y: e.clientY };
+                draw();
+                return;
+            }
+
+            const p = mousePos(e);
+            let hover = false;
+
+            if (!isSpacePressed) {
+                for (let i = nodes.length - 1; i >= 0; i--) {
+                    if (dist(p, nodes[i]) <= nodes[i].r + (8 / zoom)) {
+                        hover = true;
+                        break;
+                    }
+                }
+            }
+
+            if (isDragging && selectedId !== null) {
+                canvasWrap.style.cursor = 'grabbing';
+                const n = nodes.find(x => x.id === selectedId);
+                if (n) {
+                    const rawX = p.x - dragOff.x;
+                    const rawY = p.y - dragOff.y;
+                    let sx = rawX, sy = rawY;
+
+                    guides = [];
+                    const thresh = 8 / zoom;
+
+                    const wrapRect = canvasWrap.getBoundingClientRect();
+                    const viewMinX = (-panX - 100) / zoom;
+                    const viewMaxX = (wrapRect.width - panX + 100) / zoom;
+                    const viewMinY = (-panY - 100) / zoom;
+                    const viewMaxY = (wrapRect.height - panY + 100) / zoom;
+
+                    let bestSnapX = null;
+                    let bestSnapY = null;
+
+                    function trySnapX(rawVal, snapVal, guideX, color) {
+                        const d = Math.abs(rawVal - snapVal);
+                        if (d < thresh && (!bestSnapX || d < bestSnapX.dist)) {
+                            const centerVal = rawX + (snapVal - rawVal);
+                            bestSnapX = { dist: d, snapVal: centerVal, guides: [{ x1: guideX, y1: viewMinY, x2: guideX, y2: viewMaxY, color }] };
+                        } else if (d < thresh && bestSnapX && Math.abs(d - bestSnapX.dist) < 0.5) {
+                            bestSnapX.guides.push({ x1: guideX, y1: viewMinY, x2: guideX, y2: viewMaxY, color });
+                        }
+                    }
+
+                    function trySnapY(rawVal, snapVal, guideY, color) {
+                        const d = Math.abs(rawVal - snapVal);
+                        if (d < thresh && (!bestSnapY || d < bestSnapY.dist)) {
+                            const centerVal = rawY + (snapVal - rawVal);
+                            bestSnapY = { dist: d, snapVal: centerVal, guides: [{ x1: viewMinX, y1: guideY, x2: viewMaxX, y2: guideY, color }] };
+                        } else if (d < thresh && bestSnapY && Math.abs(d - bestSnapY.dist) < 0.5) {
+                            bestSnapY.guides.push({ x1: viewMinX, y1: guideY, x2: viewMaxX, y2: guideY, color });
+                        }
+                    }
+
+                    const centerColor = '#10b981';
+                    const edgeColor = '#06b6d4';
+
+                    nodes.forEach(o => {
+                        if (o.id === n.id) return;
+                        trySnapX(rawX, o.x, o.x, centerColor);
+                        trySnapX(rawX - n.r, o.x - o.r, o.x - o.r, edgeColor);
+                        trySnapX(rawX + n.r, o.x + o.r, o.x + o.r, edgeColor);
+                        trySnapX(rawX - n.r, o.x + o.r, o.x + o.r, edgeColor);
+                        trySnapX(rawX + n.r, o.x - o.r, o.x - o.r, edgeColor);
+
+                        trySnapY(rawY, o.y, o.y, centerColor);
+                        trySnapY(rawY - n.r, o.y - o.r, o.y - o.r, edgeColor);
+                        trySnapY(rawY + n.r, o.y + o.r, o.y + o.r, edgeColor);
+                        trySnapY(rawY - n.r, o.y + o.r, o.y + o.r, edgeColor);
+                        trySnapY(rawY + n.r, o.y - o.r, o.y - o.r, edgeColor);
+                    });
+
+                    if (bestSnapX) {
+                        sx = bestSnapX.snapVal;
+                        guides.push(...bestSnapX.guides);
+                    }
+                    if (bestSnapY) {
+                        sy = bestSnapY.snapVal;
+                        guides.push(...bestSnapY.guides);
+                    }
+
+                    n.x = Math.round(sx);
+                    n.y = Math.round(sy);
+                    draw();
+                }
+            } else {
+                canvasWrap.style.cursor = isSpacePressed ? 'grab' : hover ? 'pointer' : 'default';
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            isPanning = false;
+            guides = [];
+            canvasWrap.style.cursor = isSpacePressed ? 'grab' : 'default';
+            draw();
+        });
+
+        // ===== CONTROL BUTTON LISTENERS =====
+        document.getElementById('addBtn').addEventListener('click', () => {
+            const wrapRect = canvasWrap.getBoundingClientRect();
+            const centerWorld = mousePos({
+                clientX: wrapRect.left + wrapRect.width / 2,
+                clientY: wrapRect.top + wrapRect.height / 2
+            });
+            const id = nextId++;
+            const offsetIdx = nodes.length % 5;
+            nodes.push({
+                id,
+                x: Math.round(centerWorld.x + (offsetIdx * 40 - 80)),
+                y: Math.round(centerWorld.y + (offsetIdx % 2 === 0 ? -30 : 30)),
+                r: 60,
+                side: 1
+            });
+            selectedId = id;
+            renderUI();
+            draw();
+        });
+
+        document.getElementById('zoomInBtn').addEventListener('click', () => setZoom(zoom * 1.25));
+        document.getElementById('zoomOutBtn').addEventListener('click', () => setZoom(zoom * 0.8));
+        document.getElementById('zoomResetBtn').addEventListener('click', () => setZoom(1.0));
+        document.getElementById('fitViewBtn').addEventListener('click', fitView);
+
+        document.getElementById('exportBtn').addEventListener('click', exportSVG);
+
+        window.addEventListener('resize', setupCanvas);
+
+        setupCanvas();
+        renderUI();
+    </script>
+</body>
+</html>

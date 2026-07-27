@@ -115,8 +115,23 @@
         }
 
         .node-card.dragging { opacity: 0.3; }
-        .node-card.drag-over-top { border-top: 2px solid var(--border-active); }
-        .node-card.drag-over-bottom { border-bottom: 2px solid var(--border-active); }
+        .node-card.drag-over-top::before,
+        .node-card.drag-over-bottom::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border-active);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .node-card.drag-over-top::before {
+            top: -5px;
+        }
+        .node-card.drag-over-bottom::after {
+            bottom: -5px;
+        }
 
         .node-header {
             display: flex;
@@ -625,7 +640,12 @@
                         c.classList.remove('drag-over-top', 'drag-over-bottom');
                     });
                     if (e.clientY < midY) {
-                        card.classList.add('drag-over-top');
+                        const prev = card.previousElementSibling;
+                        if (prev) {
+                            prev.classList.add('drag-over-bottom');
+                        } else {
+                            card.classList.add('drag-over-top');
+                        }
                     } else {
                         card.classList.add('drag-over-bottom');
                     }

@@ -287,12 +287,14 @@
             height: 100%;
             position: relative;
             user-select: none;
+            touch-action: none;
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 100%;
+            touch-action: none;
         }
 
         /* ===== FLOATING TOOLBAR ===== */
@@ -765,6 +767,59 @@
                     draw();
                 });
 
+                const dragHandle = card.querySelector('.drag-handle');
+                if (dragHandle) {
+                    dragHandle.addEventListener('touchstart', (e) => {
+                        const touch = e.touches[0];
+                        touchCardDrag = {
+                            fromIndex: i,
+                            targetIndex: i
+                        };
+                        card.classList.add('dragging');
+                        e.stopPropagation();
+                    }, { passive: true });
+
+                    dragHandle.addEventListener('touchmove', (e) => {
+                        if (!touchCardDrag) return;
+                        const touch = e.touches[0];
+                        const targetElem = document.elementFromPoint(touch.clientX, touch.clientY);
+                        const targetCard = targetElem ? targetElem.closest('.node-card') : null;
+                        clearDragIndicators();
+
+                        if (targetCard && targetCard !== card) {
+                            const rect = targetCard.getBoundingClientRect();
+                            const horiz = window.matchMedia('(max-width: 600px)').matches;
+                            const after = horiz ? touch.clientX >= rect.left + rect.width / 2 : touch.clientY >= rect.top + rect.height / 2;
+                            const idx = parseInt(targetCard.dataset.index, 10);
+                            touchCardDrag.targetIndex = after ? idx + 1 : idx;
+
+                            if (after) {
+                                targetCard.classList.add('drag-over');
+                            } else {
+                                const prev = targetCard.previousElementSibling;
+                                (prev || targetCard).classList.add(prev ? 'drag-over' : 'drag-over-first');
+                            }
+                        }
+                        if (e.cancelable) e.preventDefault();
+                    }, { passive: false });
+
+                    dragHandle.addEventListener('touchend', () => {
+                        if (!touchCardDrag) return;
+                        clearDragIndicators();
+                        card.classList.remove('dragging');
+                        const fromIndex = touchCardDrag.fromIndex;
+                        const toIndex = touchCardDrag.targetIndex;
+                        touchCardDrag = null;
+
+                        if (fromIndex !== null && toIndex !== null && fromIndex !== toIndex && fromIndex !== toIndex - 1) {
+                            const [moved] = nodes.splice(fromIndex, 1);
+                            nodes.splice(fromIndex < toIndex ? toIndex - 1 : toIndex, 0, moved);
+                            renderUI();
+                            draw();
+                        }
+                    });
+                }
+
                 nodeList.appendChild(card);
             });
         }
@@ -1140,6 +1195,79 @@
             draw();
         });
 
+        function handleNodeDrag(p) {
+            if (!isDragging || selectedId === null) return;
+            const n = nodes.find(x => x.id === selectedId);
+            if (!n) return;
+
+            const rawX = p.x - dragOff.x;
+            const rawY = p.y - dragOff.y;
+            let sx = rawX, sy = rawY;
+
+            guides = [];
+            const thresh = 8 / zoom;
+
+            const wrapRect = canvasWrap.getBoundingClientRect();
+            const viewMinX = (-panX - 100) / zoom;
+            const viewMaxX = (wrapRect.width - panX + 100) / zoom;
+            const viewMinY = (-panY - 100) / zoom;
+            const viewMaxY = (wrapRect.height - panY + 100) / zoom;
+
+            let bestSnapX = null;
+            let bestSnapY = null;
+
+            function trySnapX(rawVal, snapVal, guideX, color) {
+                const d = Math.abs(rawVal - snapVal);
+                if (d < thresh && (!bestSnapX || d < bestSnapX.dist)) {
+                    const centerVal = rawX + (snapVal - rawVal);
+                    bestSnapX = { dist: d, snapVal: centerVal, guides: [{ x1: guideX, y1: viewMinY, x2: guideX, y2: viewMaxY, color }] };
+                } else if (d < thresh && bestSnapX && Math.abs(d - bestSnapX.dist) < 0.5) {
+                    bestSnapX.guides.push({ x1: guideX, y1: viewMinY, x2: guideX, y2: viewMaxY, color });
+                }
+            }
+
+            function trySnapY(rawVal, snapVal, guideY, color) {
+                const d = Math.abs(rawVal - snapVal);
+                if (d < thresh && (!bestSnapY || d < bestSnapY.dist)) {
+                    const centerVal = rawY + (snapVal - rawVal);
+                    bestSnapY = { dist: d, snapVal: centerVal, guides: [{ x1: viewMinX, y1: guideY, x2: viewMaxX, y2: guideY, color }] };
+                } else if (d < thresh && bestSnapY && Math.abs(d - bestSnapY.dist) < 0.5) {
+                    bestSnapY.guides.push({ x1: viewMinX, y1: guideY, x2: guideY, y2: guideY, color });
+                }
+            }
+
+            const centerColor = '#008800';
+            const edgeColor = '#0088cc';
+
+            nodes.forEach(o => {
+                if (o.id === n.id) return;
+                trySnapX(rawX, o.x, o.x, centerColor);
+                trySnapX(rawX - n.r, o.x - o.r, o.x - o.r, edgeColor);
+                trySnapX(rawX + n.r, o.x + o.r, o.x + o.r, edgeColor);
+                trySnapX(rawX - n.r, o.x + o.r, o.x + o.r, edgeColor);
+                trySnapX(rawX + n.r, o.x - o.r, o.x - o.r, edgeColor);
+
+                trySnapY(rawY, o.y, o.y, centerColor);
+                trySnapY(rawY - n.r, o.y - o.r, o.y - o.r, edgeColor);
+                trySnapY(rawY + n.r, o.y + o.r, o.y + o.r, edgeColor);
+                trySnapY(rawY - n.r, o.y + o.r, o.y + o.r, edgeColor);
+                trySnapY(rawY + n.r, o.y - o.r, o.y - o.r, edgeColor);
+            });
+
+            if (bestSnapX) {
+                sx = bestSnapX.snapVal;
+                guides.push(...bestSnapX.guides);
+            }
+            if (bestSnapY) {
+                sy = bestSnapY.snapVal;
+                guides.push(...bestSnapY.guides);
+            }
+
+            n.x = Math.round(sx);
+            n.y = Math.round(sy);
+            draw();
+        }
+
         window.addEventListener('mousemove', (e) => {
             if (isPanning) {
                 const dx = e.clientX - panStart.x;
@@ -1165,75 +1293,7 @@
 
             if (isDragging && selectedId !== null) {
                 canvasWrap.style.cursor = 'grabbing';
-                const n = nodes.find(x => x.id === selectedId);
-                if (n) {
-                    const rawX = p.x - dragOff.x;
-                    const rawY = p.y - dragOff.y;
-                    let sx = rawX, sy = rawY;
-
-                    guides = [];
-                    const thresh = 8 / zoom;
-
-                    const wrapRect = canvasWrap.getBoundingClientRect();
-                    const viewMinX = (-panX - 100) / zoom;
-                    const viewMaxX = (wrapRect.width - panX + 100) / zoom;
-                    const viewMinY = (-panY - 100) / zoom;
-                    const viewMaxY = (wrapRect.height - panY + 100) / zoom;
-
-                    let bestSnapX = null;
-                    let bestSnapY = null;
-
-                    function trySnapX(rawVal, snapVal, guideX, color) {
-                        const d = Math.abs(rawVal - snapVal);
-                        if (d < thresh && (!bestSnapX || d < bestSnapX.dist)) {
-                            const centerVal = rawX + (snapVal - rawVal);
-                            bestSnapX = { dist: d, snapVal: centerVal, guides: [{ x1: guideX, y1: viewMinY, x2: guideX, y2: viewMaxY, color }] };
-                        } else if (d < thresh && bestSnapX && Math.abs(d - bestSnapX.dist) < 0.5) {
-                            bestSnapX.guides.push({ x1: guideX, y1: viewMinY, x2: guideX, y2: viewMaxY, color });
-                        }
-                    }
-
-                    function trySnapY(rawVal, snapVal, guideY, color) {
-                        const d = Math.abs(rawVal - snapVal);
-                        if (d < thresh && (!bestSnapY || d < bestSnapY.dist)) {
-                            const centerVal = rawY + (snapVal - rawVal);
-                            bestSnapY = { dist: d, snapVal: centerVal, guides: [{ x1: viewMinX, y1: guideY, x2: viewMaxX, y2: guideY, color }] };
-                        } else if (d < thresh && bestSnapY && Math.abs(d - bestSnapY.dist) < 0.5) {
-                            bestSnapY.guides.push({ x1: viewMinX, y1: guideY, x2: guideY, y2: guideY, color });
-                        }
-                    }
-
-                    const centerColor = '#008800';
-                    const edgeColor = '#0088cc';
-
-                    nodes.forEach(o => {
-                        if (o.id === n.id) return;
-                        trySnapX(rawX, o.x, o.x, centerColor);
-                        trySnapX(rawX - n.r, o.x - o.r, o.x - o.r, edgeColor);
-                        trySnapX(rawX + n.r, o.x + o.r, o.x + o.r, edgeColor);
-                        trySnapX(rawX - n.r, o.x + o.r, o.x + o.r, edgeColor);
-                        trySnapX(rawX + n.r, o.x - o.r, o.x - o.r, edgeColor);
-
-                        trySnapY(rawY, o.y, o.y, centerColor);
-                        trySnapY(rawY - n.r, o.y - o.r, o.y - o.r, edgeColor);
-                        trySnapY(rawY + n.r, o.y + o.r, o.y + o.r, edgeColor);
-                        trySnapY(rawY - n.r, o.y + o.r, o.y + o.r, edgeColor);
-                        trySnapY(rawY + n.r, o.y - o.r, o.y - o.r, edgeColor);
-                    });
-
-                    if (bestSnapX) {
-                        sx = bestSnapX.snapVal;
-                        guides.push(...bestSnapX.guides);
-                    }
-                    if (bestSnapY) {
-                        sy = bestSnapY.snapVal;
-                        guides.push(...bestSnapY.guides);
-                    }
-
-                    n.x = Math.round(sx);
-                    n.y = Math.round(sy);
-                    draw();
-                }
+                handleNodeDrag(p);
             } else {
                 canvasWrap.style.cursor = isSpacePressed ? 'grab' : hover ? 'pointer' : 'default';
             }
@@ -1246,6 +1306,148 @@
             canvasWrap.style.cursor = isSpacePressed ? 'grab' : 'default';
             draw();
         });
+
+        // ===== TOUCH & PINCH-TO-ZOOM EVENTS =====
+        let touchCardDrag = null;
+        let isPinching = false;
+        let initialPinchDist = 0;
+        let initialPinchZoom = 1;
+        let pinchCenterCanvas = { x: 0, y: 0 };
+        let lastPinchCenterClient = { x: 0, y: 0 };
+
+        function getTouchPos(touch) {
+            const r = canvas.getBoundingClientRect();
+            const cssX = touch.clientX - r.left;
+            const cssY = touch.clientY - r.top;
+            return {
+                x: (cssX - panX) / zoom,
+                y: (cssY - panY) / zoom
+            };
+        }
+
+        canvasWrap.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isPinching = false;
+                const touch = e.touches[0];
+                const p = getTouchPos(touch);
+                let hit = null;
+
+                const hitMargin = 16 / zoom;
+                for (let i = nodes.length - 1; i >= 0; i--) {
+                    if (dist(p, nodes[i]) <= nodes[i].r + hitMargin) {
+                        hit = nodes[i];
+                        break;
+                    }
+                }
+
+                if (hit) {
+                    selectedId = hit.id;
+                    isDragging = true;
+                    isPanning = false;
+                    dragOff.x = p.x - hit.x;
+                    dragOff.y = p.y - hit.y;
+                } else {
+                    selectedId = null;
+                    isDragging = false;
+                    isPanning = true;
+                    panStart = { x: touch.clientX, y: touch.clientY };
+                }
+
+                renderUI();
+                draw();
+                if (e.cancelable) e.preventDefault();
+            } else if (e.touches.length === 2) {
+                isDragging = false;
+                isPanning = false;
+                isPinching = true;
+
+                const t1 = e.touches[0];
+                const t2 = e.touches[1];
+
+                initialPinchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+                initialPinchZoom = zoom;
+
+                const wrapRect = canvasWrap.getBoundingClientRect();
+                lastPinchCenterClient = {
+                    x: (t1.clientX + t2.clientX) / 2,
+                    y: (t1.clientY + t2.clientY) / 2
+                };
+                pinchCenterCanvas = {
+                    x: lastPinchCenterClient.x - wrapRect.left,
+                    y: lastPinchCenterClient.y - wrapRect.top
+                };
+
+                if (e.cancelable) e.preventDefault();
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && !isPinching) {
+                const touch = e.touches[0];
+                if (isPanning) {
+                    const dx = touch.clientX - panStart.x;
+                    const dy = touch.clientY - panStart.y;
+                    panX += dx;
+                    panY += dy;
+                    panStart = { x: touch.clientX, y: touch.clientY };
+                    draw();
+                    if (e.cancelable) e.preventDefault();
+                } else if (isDragging && selectedId !== null) {
+                    const p = getTouchPos(touch);
+                    handleNodeDrag(p);
+                    if (e.cancelable) e.preventDefault();
+                }
+            } else if (e.touches.length === 2 && isPinching && initialPinchDist > 0) {
+                const t1 = e.touches[0];
+                const t2 = e.touches[1];
+                const currDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+
+                if (currDist > 0) {
+                    const wrapRect = canvasWrap.getBoundingClientRect();
+                    const currCenterClient = {
+                        x: (t1.clientX + t2.clientX) / 2,
+                        y: (t1.clientY + t2.clientY) / 2
+                    };
+
+                    const scale = currDist / initialPinchDist;
+                    const targetZoom = initialPinchZoom * scale;
+
+                    const dx = currCenterClient.x - lastPinchCenterClient.x;
+                    const dy = currCenterClient.y - lastPinchCenterClient.y;
+                    panX += dx;
+                    panY += dy;
+                    lastPinchCenterClient = currCenterClient;
+
+                    const currentPinchCenterCanvas = {
+                        x: currCenterClient.x - wrapRect.left,
+                        y: currCenterClient.y - wrapRect.top
+                    };
+
+                    setZoom(targetZoom, currentPinchCenterCanvas.x, currentPinchCenterCanvas.y);
+                }
+                if (e.cancelable) e.preventDefault();
+            }
+        }, { passive: false });
+
+        const endTouch = (e) => {
+            if (!e.touches || e.touches.length === 0) {
+                isDragging = false;
+                isPanning = false;
+                isPinching = false;
+                initialPinchDist = 0;
+                guides = [];
+                draw();
+            } else if (e.touches.length === 1 && isPinching) {
+                isPinching = false;
+                isDragging = false;
+                isPanning = true;
+                const touch = e.touches[0];
+                panStart = { x: touch.clientX, y: touch.clientY };
+            }
+        };
+
+        window.addEventListener('touchend', endTouch);
+        window.addEventListener('touchcancel', endTouch);
 
         // ===== CONTROL BUTTON LISTENERS =====
         document.getElementById('addBtn').addEventListener('click', () => {

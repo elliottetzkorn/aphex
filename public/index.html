@@ -100,12 +100,29 @@
             gap: 6px;
             position: relative;
             font-size: 11px;
-            cursor: grab;
             user-select: none;
             transition: border-color 0.15s, outline 0.15s;
         }
 
-        .node-card:active {
+        .drag-handle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            color: var(--text-muted);
+            padding: 2px 3px;
+            border-radius: 2px;
+            user-select: none;
+            touch-action: none;
+            transition: color 0.1s, background 0.1s;
+        }
+
+        .drag-handle:hover {
+            color: var(--text-main);
+            background: rgba(128, 128, 128, 0.15);
+        }
+
+        .drag-handle:active {
             cursor: grabbing;
         }
 
@@ -640,35 +657,49 @@
                 const card = document.createElement('div');
                 card.className = 'node-card' + (selectedId === n.id ? ' selected' : '');
                 card.dataset.index = i;
-                card.setAttribute('draggable', 'true');
                 card.innerHTML = `
                     <div class="node-header">
-                        <div class="side-toggle-minimal">
-                            <button type="button" class="side-tile ${n.side === -1 ? 'active' : ''}" onclick="setSide(${n.id}, -1)" title="Left (CCW)">L</button>
-                            <button type="button" class="side-tile ${n.side === 1 ? 'active' : ''}" onclick="setSide(${n.id}, 1)" title="Right (CW)">R</button>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <div class="drag-handle" draggable="true" title="Drag to reorder">
+                                <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+                                    <circle cx="3" cy="3" r="1.2"/>
+                                    <circle cx="7" cy="3" r="1.2"/>
+                                    <circle cx="3" cy="7" r="1.2"/>
+                                    <circle cx="7" cy="7" r="1.2"/>
+                                    <circle cx="3" cy="11" r="1.2"/>
+                                    <circle cx="7" cy="11" r="1.2"/>
+                                </svg>
+                            </div>
+                            <div class="side-toggle-minimal">
+                                <button type="button" class="side-tile ${n.side === -1 ? 'active' : ''}" onclick="setSide(${n.id}, -1)" title="Left (CCW)">L</button>
+                                <button type="button" class="side-tile ${n.side === 1 ? 'active' : ''}" onclick="setSide(${n.id}, 1)" title="Right (CW)">R</button>
+                            </div>
                         </div>
                         <button type="button" class="btn-del" onclick="deleteNode(${n.id})" title="Delete Pulley">[X]</button>
                     </div>
                     <div>
                         <div class="row"><span>Radius</span><span class="val" style="font-weight: bold;">${n.r}</span></div>
-                        <input type="range" min="10" max="300" value="${n.r}" oninput="updateR(${n.id}, this.value, this)" draggable="false" onmousedown="event.stopPropagation()">
+                        <input type="range" min="10" max="300" value="${n.r}" oninput="updateR(${n.id}, this.value, this)">
                     </div>
                 `;
 
                 card.addEventListener('mousedown', (e) => {
-                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.closest('button') || e.target.closest('input')) return;
+                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.closest('button') || e.target.closest('input') || e.target.closest('.drag-handle')) return;
                     selectedId = n.id;
                     renderUI();
                     draw();
                 });
 
                 card.addEventListener('dragstart', (e) => {
-                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || e.target.closest('button') || e.target.closest('input')) {
+                    if (!e.target.closest('.drag-handle')) {
                         e.preventDefault();
                         return;
                     }
                     e.dataTransfer.effectAllowed = 'move';
                     e.dataTransfer.setData('text/plain', i.toString());
+                    if (e.dataTransfer.setDragImage) {
+                        e.dataTransfer.setDragImage(card, 10, 10);
+                    }
                     requestAnimationFrame(() => card.classList.add('dragging'));
                 });
 

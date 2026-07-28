@@ -671,8 +671,8 @@
                                 </svg>
                             </div>
                             <div class="side-toggle-minimal">
-                                <button type="button" class="side-tile ${n.side === -1 ? 'active' : ''}" onclick="setSide(${n.id}, -1)" title="Left (CCW)">L</button>
-                                <button type="button" class="side-tile ${n.side === 1 ? 'active' : ''}" onclick="setSide(${n.id}, 1)" title="Right (CW)">R</button>
+                                <button type="button" class="side-tile ${n.side === 1 ? 'active' : ''}" onclick="setSide(${n.id}, 1)" title="In (CW)">in</button>
+                                <button type="button" class="side-tile ${n.side === -1 ? 'active' : ''}" onclick="setSide(${n.id}, -1)" title="Out (CCW)">out</button>
                             </div>
                         </div>
                         <button type="button" class="btn-del" onclick="deleteNode(${n.id})" title="Delete Pulley">[X]</button>
@@ -1230,20 +1230,58 @@
 
         // ===== CONTROL BUTTON LISTENERS =====
         document.getElementById('addBtn').addEventListener('click', () => {
+            const id = nextId++;
             const wrapRect = canvasWrap.getBoundingClientRect();
             const centerWorld = mousePos({
                 clientX: wrapRect.left + wrapRect.width / 2,
                 clientY: wrapRect.top + wrapRect.height / 2
             });
-            const id = nextId++;
-            const offsetIdx = nodes.length % 5;
-            nodes.push({
+
+            const newNode = {
                 id,
-                x: Math.round(centerWorld.x + (offsetIdx * 40 - 80)),
-                y: Math.round(centerWorld.y + (offsetIdx % 2 === 0 ? -30 : 30)),
+                x: 0,
+                y: 0,
                 r: 60,
                 side: 1
-            });
+            };
+
+            if (nodes.length === 0) {
+                newNode.x = Math.round(centerWorld.x);
+                newNode.y = Math.round(centerWorld.y);
+                nodes.push(newNode);
+            } else {
+                const targetNode = nodes.find(n => n.id === selectedId) || nodes[nodes.length - 1];
+                const targetIdx = nodes.indexOf(targetNode);
+                const otherNodes = nodes.filter(n => n.id !== targetNode.id);
+
+                if (otherNodes.length > 0) {
+                    let nearestNode = null;
+                    let minSqDist = Infinity;
+                    for (const other of otherNodes) {
+                        const dx = other.x - targetNode.x;
+                        const dy = other.y - targetNode.y;
+                        const sqDist = dx * dx + dy * dy;
+                        if (sqDist < minSqDist) {
+                            minSqDist = sqDist;
+                            nearestNode = other;
+                        }
+                    }
+
+                    if (nearestNode && minSqDist > 0) {
+                        newNode.x = Math.round((targetNode.x + nearestNode.x) / 2);
+                        newNode.y = Math.round((targetNode.y + nearestNode.y) / 2);
+                    } else {
+                        newNode.x = Math.round(targetNode.x + targetNode.r * 2 + 20);
+                        newNode.y = Math.round(targetNode.y);
+                    }
+                } else {
+                    newNode.x = Math.round(targetNode.x + targetNode.r * 2 + 20);
+                    newNode.y = Math.round(targetNode.y);
+                }
+
+                nodes.splice(targetIdx + 1, 0, newNode);
+            }
+
             selectedId = id;
             renderUI();
             draw();

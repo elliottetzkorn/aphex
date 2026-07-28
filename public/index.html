@@ -1237,13 +1237,7 @@
                 clientY: wrapRect.top + wrapRect.height / 2
             });
 
-            const newNode = {
-                id,
-                x: 0,
-                y: 0,
-                r: 60,
-                side: 1
-            };
+            const newNode = { id, x: 0, y: 0, r: 60, side: 1 };
 
             if (nodes.length === 0) {
                 newNode.x = Math.round(centerWorld.x);
@@ -1256,60 +1250,67 @@
 
                 let spawnX, spawnY;
 
-                if (otherNodes.length > 0) {
-                    let nearestNode = null;
-                    let minSqDist = Infinity;
-                    for (const other of otherNodes) {
-                        const dx = other.x - targetNode.x;
-                        const dy = other.y - targetNode.y;
-                        const sqDist = dx * dx + dy * dy;
-                        if (sqDist < minSqDist) {
-                            minSqDist = sqDist;
-                            nearestNode = other;
-                        }
-                    }
-
-                    if (nearestNode) {
-                        const dx = nearestNode.x - targetNode.x;
-                        const dy = nearestNode.y - targetNode.y;
-                        const d = Math.hypot(dx, dy);
-
-                        if (d > 1e-6) {
-                            const t = (d + targetNode.r - nearestNode.r) / (2 * d);
-                            const clampedT = Math.min(Math.max(t, 0.05), 0.95);
-                            spawnX = targetNode.x + clampedT * dx;
-                            spawnY = targetNode.y + clampedT * dy;
-                        } else {
-                            spawnX = targetNode.x + targetNode.r * 2 + 20;
-                            spawnY = targetNode.y;
-                        }
-                    } else {
-                        spawnX = targetNode.x + targetNode.r * 2 + 20;
-                        spawnY = targetNode.y;
-                    }
+                if (otherNodes.length === 0) {
+                    spawnX = Math.round(targetNode.x + targetNode.r + 60 + 20);
+                    spawnY = Math.round(targetNode.y);
                 } else {
-                    spawnX = targetNode.x + targetNode.r * 2 + 20;
-                    spawnY = targetNode.y;
-                }
+                    let nearestNode = otherNodes[0];
+                    let minSq = Infinity;
+                    for (const o of otherNodes) {
+                        const sq = (o.x - targetNode.x) ** 2 + (o.y - targetNode.y) ** 2;
+                        if (sq < minSq) { minSq = sq; nearestNode = o; }
+                    }
 
-                // Calculate max allowed radius so it does not touch any existing pulleys
-                const margin = 5;
-                let maxAllowedR = Infinity;
-                for (const existingNode of nodes) {
-                    const distToCenter = Math.hypot(existingNode.x - spawnX, existingNode.y - spawnY);
-                    const allowedR = distToCenter - existingNode.r - margin;
-                    if (allowedR < maxAllowedR) {
-                        maxAllowedR = allowedR;
+                    function isPositionValid(px, py) {
+                        for (const o of nodes) {
+                            const minDist = o.r + 60 + 5;
+                            if (Math.hypot(px - o.x, py - o.y) < minDist) return false;
+                        }
+                        return true;
+                    }
+
+                    // 1. Try midpoint
+                    const midX = Math.round((targetNode.x + nearestNode.x) / 2);
+                    const midY = Math.round((targetNode.y + nearestNode.y) / 2);
+
+                    if (isPositionValid(midX, midY)) {
+                        spawnX = midX;
+                        spawnY = midY;
+                    } else {
+                        // 2. Search directions around targetNode for non-colliding position
+                        const baseAngle = Math.atan2(nearestNode.y - targetNode.y, nearestNode.x - targetNode.x);
+                        const radiusDist = targetNode.r + 60 + 15;
+                        let foundPos = null;
+
+                        const anglesToTry = [];
+                        for (let i = 0; i < 16; i++) {
+                            const step = Math.floor((i + 1) / 2) * (i % 2 === 0 ? 1 : -1);
+                            anglesToTry.push(baseAngle + (step * Math.PI / 8));
+                        }
+
+                        for (const ang of anglesToTry) {
+                            const testX = Math.round(targetNode.x + radiusDist * Math.cos(ang));
+                            const testY = Math.round(targetNode.y + radiusDist * Math.sin(ang));
+                            if (isPositionValid(testX, testY)) {
+                                foundPos = { x: testX, y: testY };
+                                break;
+                            }
+                        }
+
+                        if (foundPos) {
+                            spawnX = foundPos.x;
+                            spawnY = foundPos.y;
+                        } else {
+                            spawnX = Math.round(targetNode.x + targetNode.r + 60 + 20);
+                            spawnY = Math.round(targetNode.y);
+                        }
                     }
                 }
 
-                const idealR = 60;
-                let calculatedR = Math.min(idealR, maxAllowedR);
-                calculatedR = Math.max(10, Math.round(calculatedR));
-
-                newNode.x = Math.round(spawnX);
-                newNode.y = Math.round(spawnY);
-                newNode.r = calculatedR;
+                newNode.x = spawnX;
+                newNode.y = spawnY;
+                newNode.r = 60;
+                newNode.side = 1;
 
                 nodes.splice(targetIdx + 1, 0, newNode);
             }

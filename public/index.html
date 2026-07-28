@@ -1254,6 +1254,8 @@
                 const targetIdx = nodes.indexOf(targetNode);
                 const otherNodes = nodes.filter(n => n.id !== targetNode.id);
 
+                let spawnX, spawnY;
+
                 if (otherNodes.length > 0) {
                     let nearestNode = null;
                     let minSqDist = Infinity;
@@ -1267,17 +1269,47 @@
                         }
                     }
 
-                    if (nearestNode && minSqDist > 0) {
-                        newNode.x = Math.round((targetNode.x + nearestNode.x) / 2);
-                        newNode.y = Math.round((targetNode.y + nearestNode.y) / 2);
+                    if (nearestNode) {
+                        const dx = nearestNode.x - targetNode.x;
+                        const dy = nearestNode.y - targetNode.y;
+                        const d = Math.hypot(dx, dy);
+
+                        if (d > 1e-6) {
+                            const t = (d + targetNode.r - nearestNode.r) / (2 * d);
+                            const clampedT = Math.min(Math.max(t, 0.05), 0.95);
+                            spawnX = targetNode.x + clampedT * dx;
+                            spawnY = targetNode.y + clampedT * dy;
+                        } else {
+                            spawnX = targetNode.x + targetNode.r * 2 + 20;
+                            spawnY = targetNode.y;
+                        }
                     } else {
-                        newNode.x = Math.round(targetNode.x + targetNode.r * 2 + 20);
-                        newNode.y = Math.round(targetNode.y);
+                        spawnX = targetNode.x + targetNode.r * 2 + 20;
+                        spawnY = targetNode.y;
                     }
                 } else {
-                    newNode.x = Math.round(targetNode.x + targetNode.r * 2 + 20);
-                    newNode.y = Math.round(targetNode.y);
+                    spawnX = targetNode.x + targetNode.r * 2 + 20;
+                    spawnY = targetNode.y;
                 }
+
+                // Calculate max allowed radius so it does not touch any existing pulleys
+                const margin = 5;
+                let maxAllowedR = Infinity;
+                for (const existingNode of nodes) {
+                    const distToCenter = Math.hypot(existingNode.x - spawnX, existingNode.y - spawnY);
+                    const allowedR = distToCenter - existingNode.r - margin;
+                    if (allowedR < maxAllowedR) {
+                        maxAllowedR = allowedR;
+                    }
+                }
+
+                const idealR = 60;
+                let calculatedR = Math.min(idealR, maxAllowedR);
+                calculatedR = Math.max(10, Math.round(calculatedR));
+
+                newNode.x = Math.round(spawnX);
+                newNode.y = Math.round(spawnY);
+                newNode.r = calculatedR;
 
                 nodes.splice(targetIdx + 1, 0, newNode);
             }

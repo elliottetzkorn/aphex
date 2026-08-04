@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>String &amp; Pulley Logo Tool</title>
+    <meta name="description" content="An interactive design tool for creating, customizing, and exporting string and pulley logo systems and geometric vector graphics.">
+    <title>aphex - string and pulley logo system</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <style>
         * {
             box-sizing: border-box;
@@ -102,6 +104,7 @@
             background-color: var(--bg-card);
             border: 1px solid var(--border);
             padding: 8px;
+            padding-top: 11px;
             display: flex;
             flex-direction: column;
             gap: 6px;
@@ -109,6 +112,15 @@
             font-size: 11px;
             user-select: none;
             transition: border-color 0.15s, outline 0.15s;
+            overflow: hidden;
+        }
+
+        .node-color-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
         }
 
         .drag-handle {
@@ -461,6 +473,34 @@
         let isSpacePressed = false;
         let initialViewDone = false;
 
+        // ===== COLOR GENERATOR =====
+        function hslToHex(h, s, l) {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+        }
+
+        function generateLegibleColor() {
+            const hue = Math.floor(Math.random() * 360);
+            const saturation = 75 + Math.floor(Math.random() * 20);
+            
+            let lightness = 48;
+            if (hue >= 40 && hue <= 80) {
+                lightness = 38 + Math.floor(Math.random() * 6);
+            } else if (hue >= 210 && hue <= 270) {
+                lightness = 54 + Math.floor(Math.random() * 8);
+            } else {
+                lightness = 45 + Math.floor(Math.random() * 8);
+            }
+            
+            return hslToHex(hue, saturation, lightness);
+        }
+
         // ===== SYSTEM THEME DETECTOR =====
         const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: light)');
 
@@ -675,10 +715,12 @@
             }
 
             nodes.forEach((n, i) => {
+                if (!n.color) n.color = generateLegibleColor();
                 const card = document.createElement('div');
                 card.className = 'node-card' + (selectedId === n.id ? ' selected' : '');
                 card.dataset.index = i;
                 card.innerHTML = `
+                    <div class="node-color-bar" style="background-color: ${n.color};"></div>
                     <div class="node-header">
                         <div style="display: flex; align-items: center; gap: 6px;">
                             <div class="drag-handle" draggable="true" title="Drag to reorder">
@@ -926,17 +968,19 @@
             // Pulley construction guides
             ctx.save();
             nodes.forEach(n => {
-                ctx.strokeStyle = selectedId === n.id ? colors.guideSelected : colors.guideUnselected;
-                ctx.lineWidth = 1 / zoom;
-                ctx.setLineDash([3 / zoom, 3 / zoom]);
+                if (!n.color) n.color = generateLegibleColor();
+                const isSelected = selectedId === n.id;
+                ctx.strokeStyle = n.color;
+                ctx.lineWidth = (isSelected ? 2 : 1) / zoom;
+                ctx.setLineDash(isSelected ? [] : [3 / zoom, 3 / zoom]);
                 ctx.beginPath();
                 ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
                 ctx.stroke();
 
-                ctx.fillStyle = selectedId === n.id ? colors.centerDotSelected : colors.centerDotUnselected;
+                ctx.fillStyle = n.color;
                 ctx.setLineDash([]);
                 ctx.beginPath();
-                ctx.arc(n.x, n.y, 3 / zoom, 0, Math.PI * 2);
+                ctx.arc(n.x, n.y, (isSelected ? 4 : 3) / zoom, 0, Math.PI * 2);
                 ctx.fill();
             });
             ctx.restore();
@@ -1087,7 +1131,8 @@
                     x: n.x,
                     y: n.y,
                     r: n.r,
-                    side: n.side
+                    side: n.side,
+                    color: n.color
                 }))
             };
             const jsonContent = JSON.stringify(data, null, 2);
@@ -1116,7 +1161,8 @@
                         x: typeof n.x === 'number' ? n.x : 400,
                         y: typeof n.y === 'number' ? n.y : 400,
                         r: typeof n.r === 'number' ? Math.max(5, n.r) : 60,
-                        side: n.side === -1 ? -1 : 1
+                        side: n.side === -1 ? -1 : 1,
+                        color: typeof n.color === 'string' && n.color ? n.color : generateLegibleColor()
                     }));
 
                     if (importedNodes.length === 0) {
@@ -1458,7 +1504,7 @@
                 clientY: wrapRect.top + wrapRect.height / 2
             });
 
-            const newNode = { id, x: 0, y: 0, r: 60, side: 1 };
+            const newNode = { id, x: 0, y: 0, r: 60, side: 1, color: generateLegibleColor() };
 
             if (nodes.length === 0) {
                 newNode.x = Math.round(centerWorld.x);
